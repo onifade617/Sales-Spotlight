@@ -1,4 +1,5 @@
 INTRODUCTION
+
 In today's competitive market, understanding sales trends and customer behavior is crucial for businesses to make informed decisions and drive growth. 
 This project aims to analyze sales data to uncover insights into product performance, sales patterns, and customer purchasing habits. 
 By exploring these areas,the goal is to identify opportunities for improvement and optimization.
