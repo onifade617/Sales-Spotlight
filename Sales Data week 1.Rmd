@@ -1,0 +1,309 @@
+---
+title: "Sales Spotlight: Insights on Product and Location-Based Performance"
+author: "Onifade Monsuru"
+date: "2024-07-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+```
+
+## Introduction
+
+In today's competitive market, understanding sales trends and customer behavior is crucial for businesses to make informed decisions and drive growth. This project aims to analyze sales data to uncover insights into product performance, sales patterns, and customer purchasing habits. By exploring these areas,the goal is to identify opportunities for improvement and optimization.
+
+
+## Executive Summary
+
+
+This project analyzed sales data across various products, locations, and customer segments to answer key questions:
+
+- Which products are driving sales and revenue? (Product Sales Performance)
+- Where are our sales concentrated, and what are the trends in different locations? (Sales by Location)
+- How are our product categories performing, and which ones offer the most potential for growth? (Product Category Performance)
+- What are the patterns and trends in our sales data, and how can we leverage them to inform our strategy? (Sales Trends and Patterns)
+
+
+Our findings highlight key areas of strength and opportunity, including:
+
+**Top-selling products and categories**
+**High-potential locations for expansion**
+**Seasonal and periodic sales patterns**
+**Valuable customer segments and their purchasing habits**
+
+By acting on these insights, we can optimize our product offerings, sales strategies, and customer engagement to drive business growth and revenue.
+
+
+## Data Overview
+```{r overview, echo=FALSE}
+
+raw_file <- read.csv("C:/Users/SAIL/Downloads/Sales Data.csv")
+glimpse(raw_file)
+
+data <- raw_file |>
+  na.omit() |>
+  unique()
+
+
+
+
+```
+
+
+### Unique OrderID
+This statistic shows the total number of unique orders processed, which is **178,437** out of a total of **185,950** records. This indicates that approximately **96%** of the records represent unique orders **(178,437 / 185,950)**.
+
+
+
+## Quantity Ordered Statistics
+ 
+```{r order, echo = FALSE}
+library(dplyr)
+
+raw_file <- read.csv("C:/Users/SAIL/Downloads/Sales Data.csv")
+data <- raw_file |>
+  na.omit() |>
+  unique()
+
+quantity_ordered_stats <- data %>%
+  summarise(
+    Mean = mean(Quantity.Ordered),
+    Median = median(Quantity.Ordered),
+    SD = sd(Quantity.Ordered),
+    Min = min(Quantity.Ordered),
+    Max = max(Quantity.Ordered)
+  )
+quantity_ordered_stats
+```
+
+
+**Interpretation**: The minimum quantity ordered is 1, and the maximum is 9.
+
+
+### Price Statistics
+```{r price, echo = FALSE}
+price_each_stats <- data %>%
+  summarise(
+    Mean = mean(Price.Each),
+    SD = sd(Price.Each),
+    Min = min(Price.Each),
+    Max = max(Price.Each)
+  )
+
+price_each_stats
+```
+
+
+**Interpretation**: The average price per item is **$184.40**, with a standard deviation of **$332.73**, indicating significant variation in prices.The minimum price is **$2.99** , and the maximum price is  **$1,700**.
+
+
+
+
+
+### Sales Statistics
+```{r sales, echo = FALSE}
+sales_stats <- data %>%
+  summarise(
+    Mean = mean(Sales),
+    Median = median(Sales),
+    SD = sd(Sales),
+    Min = min(Sales),
+    Max = max(Sales)
+  )
+sales_stats
+```
+
+
+**Interpretation**: The average sales amount is **$185.49**, with a median of **$14.95**. The standard deviation is **$332.92**, indicating significant variation in sales amounts. The minimum sales amount is **$2.99**, and the maximum is **$3,400**.
+
+
+
+
+# Product Sales Performance
+
+### 1. Which product has the highest total Quantity Sold?
+```{r highest, echo=FALSE}
+
+top_product <- data %>%
+  group_by(Product) %>%
+  summarise(Total_quantity = sum(Quantity.Ordered)) %>%
+  arrange(desc(Total_quantity)) %>%
+  slice(1)
+
+top_product_name <- top_product$Product
+
+# Visualization for total sales by product
+total_quantity_by_product <- data %>%
+  group_by(Product) %>%
+  summarise(Total_quantity = sum(Quantity.Ordered)) %>%
+  arrange(desc(Total_quantity))
+
+ggplot(total_quantity_by_product, aes(x = reorder(Product, Total_quantity), y = Total_quantity, fill = (Product == top_product_name))) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  scale_fill_manual(values = c("TRUE" = "blue", "FALSE" = "gray")) +
+  geom_text(aes(label = round(Total_quantity, 2)), hjust = -0.2) +
+  theme_minimal() +
+  labs(title = "Total Quantity Sold by Product", x = "Product", y = "Total quantity sold") +
+  theme(legend.position = "none")
+```
+
+
+**Interpretation**: **AAA Batteries (4-pack)** has the highest total quantity sold with **31,017**units.
+
+
+
+
+### 2. Which product has the highest revenue share?
+```{r revenue, echo=FALSE}
+
+# Calculate total revenue
+total_revenue <- sum(data$Sales)
+
+# Calculate revenue share by product
+revenue_share_by_product <- data %>%
+  group_by(Product) %>%
+  summarise(Total_Revenue = sum(Sales)) %>%
+  mutate(Revenue_Share = Total_Revenue / total_revenue) %>%
+  arrange(desc(Revenue_Share))
+
+# Identify the top 3 products by revenue share
+revenue_share_by_product <- revenue_share_by_product %>%
+  mutate(Color = ifelse(row_number() <= 3, "skyblue", "gray"))
+
+# Visualization for revenue share by product (bar chart)
+ggplot(revenue_share_by_product, aes(x = reorder(Product, Revenue_Share), y = Revenue_Share, fill = Color)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = scales::percent(Revenue_Share, accuracy = 0.1)), hjust = -0.5, size = 3) +
+  scale_fill_identity() +
+  theme_minimal() +
+  labs(title = "Revenue Share by Product", x = "Product", y = "Revenue Share") +
+  theme(legend.position = "none") +
+  coord_flip()
+```
+
+
+**Interpretation**: **Macbook Pro Laptop** has the highest total sales with **$8,037,600**.
+
+
+
+
+# Sales by Location
+
+
+
+### Which cities have the highest and lowest total sales?
+
+```{r Selling, echo=FALSE}
+total_sales_by_city <- data %>%
+  group_by(City) %>%
+  summarise(Total_Sales = sum(Sales)) %>%
+  arrange(desc(Total_Sales))
+
+# Determine the city with the highest total sales
+top_city <- total_sales_by_city$City[1]
+total_sales_by_city$City
+# Bar plot with conditional coloring
+ggplot(total_sales_by_city, aes(y = reorder(City, Total_Sales), x = Total_Sales, fill = City)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = Total_Sales), hjust = -0.5, size = 3) +
+  theme_minimal() +
+  labs(title = "Total Sales by City", x = "City", y = "Total Sales") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+
+**Interpretation**: **San Francisco**, with total sales of **$8,262,204** while **Austin** has the least with total sales of **$1,819582**.
+
+This indicates that **San Francisco** has generated the most sales revenue among all cities, surpassing other major cities like **Los Angeles and New York City**. This insight could be useful for business decisions such as resource allocation, marketing strategies, and expansion plans.
+
+
+# Sales Trends and Patterns
+
+###  Which month has the highest total sales?
+
+```{r sales_trends, echo=FALSE}
+
+library(lubridate)
+# Convert Order.Date to datetime format
+data$Order.Date <- as.POSIXct(data$Order.Date, format = "%Y-%m-%d %H:%M:%S")
+
+# Extract month from Order.Date
+data$Month <- month(data$Order.Date, label = TRUE)
+
+# Summarize total sales by month
+monthly_sales <- data %>%
+  group_by(Month) %>%
+  summarise(Total.Sales = sum(Sales))
+
+
+
+
+ggplot(monthly_sales, aes(x = Month, y = Total.Sales)) +
+  geom_bar(stat = "identity") +
+  ggtitle("Total Sales by Month") +
+  xlab("Month") +
+  ylab("Total Sales") +
+  theme_minimal()
+
+```
+
+
+**Interpretation**: Sales peaked in **December** with a revenue of **$4,613,443** .
+
+
+###  Is there a seasonal pattern in sales?
+
+
+```{r sales_pattern, echo=FALSE}
+
+library(lubridate)
+# Check for seasonal patterns in sales
+seasonal_sales <- data %>%
+  group_by(Month) %>%
+  summarise(Average.Sales = mean(Sales))
+
+
+# Create a line chart with points for total sales by month
+ggplot(monthly_sales, aes(x = Month, y = Total.Sales, group = 1)) +
+  geom_line() +
+  geom_point() +
+  ggtitle("Total Sales by Month") +
+  xlab("Month") +
+  ylab("Total Sales") +
+  theme_minimal()
+
+```
+
+
+**Interpretation**: Sales Trend **rose** from **January to April** then **dipped** from **April to September** before **rallying** from **September to  December**.
+
+
+###  What is the peak sales hour of the day?
+```{r sales_hour, echo=FALSE}
+
+library(lubridate)
+# Summarize total sales by hour
+hourly_sales <- data %>%
+  group_by(Hour) %>%
+  summarise(Total.Sales = sum(Sales))
+
+# Create a line chart for total sales by hour
+ggplot(hourly_sales, aes(x = Hour, y = Total.Sales)) +
+  geom_line() +
+  geom_point() +
+  ggtitle("Total Sales by Hour of the Day") +
+  xlab("Hour of the Day") +
+  ylab("Total Sales") +
+  theme_minimal()
+
+```
+
+**Interpretation**: **Most sales activities happened at 7:00 p.m** while down time often occur at 3:00 A.M.
+
