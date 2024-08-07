@@ -9,4 +9,4 @@ import streamlit as st
 
 
 def main():
-    st.title("Univariate Statistics")
+    st.title("ABOUT")
