@@ -11,7 +11,8 @@ import streamlit as st
 def main():
     st.title("Sales Spotlight: Insights on Product and Location-Based Performance")
     st.markdown('''
-                **Onifade Monsuru**
+                **Author: Onifade Monsuru**
+                
                   2024-07-04
 ## Introduction
 In today’s competitive market, understanding sales trends and customer behavior is crucial
