@@ -13,7 +13,7 @@ def main():
     st.markdown('''
                 **Author: Onifade Monsuru**
                 
-                  ####2024-07-04
+                  2024-07-04
 ## Introduction
 In today’s competitive market, understanding sales trends and customer behavior is crucial
  for businesses to make informed decisions and drive growth. 
